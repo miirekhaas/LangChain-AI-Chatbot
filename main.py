@@ -5,46 +5,68 @@ from utils.helpers import (
     get_conversational_chain
 )
 
-# Streamlit app config
-st.set_page_config(page_title="Gemini PDF Chatbot", layout="wide")
+# App config
+st.set_page_config(page_title="📄 Gemini PDF Chatbot", layout="wide")
 st.title("📄 Gemini Chatbot with PDF")
 
-# Upload PDF file
-uploaded_file = st.file_uploader("Upload a PDF", type="pdf")
+# Upload PDF
+uploaded_file = st.file_uploader("Upload a PDF", type="pdf", key="pdf_upload")
 
 if uploaded_file:
     st.success(f"✅ PDF uploaded: {uploaded_file.name}")
 
-    with st.spinner("🔍 Processing PDF..."):
-        pages = load_pdf_from_upload(uploaded_file)
+    with st.spinner("🔍 Processing your PDF..."):
+        try:
+            pages = load_pdf_from_upload(uploaded_file)
+        except Exception as e:
+            st.error(f"❌ Error loading PDF: {e}")
+            st.stop()
 
-        if pages:
-            st.info(f"📄 Loaded {len(pages)} page(s).")
+    if not pages:
+        st.error("❌ No text extracted from PDF.")
+        st.stop()
+
+    st.info(f"📄 Loaded {len(pages)} page(s).")
+
+    with st.spinner("🔎 Creating vector store..."):
+        try:
             vector_store = create_vector_store(pages)
+        except Exception as e:
+            st.error(f"❌ Error creating vector store: {e}")
+            st.stop()
 
-            if vector_store:
-                chain = get_conversational_chain(vector_store)
+    if not vector_store:
+        st.error("❌ Vector store creation failed.")
+        st.stop()
 
-                if chain:
-                    st.success("✅ Chatbot is ready! Start asking your questions.")
-                    chat_history = []
+    with st.spinner("⚙️ Initializing chatbot..."):
+        try:
+            chain = get_conversational_chain(vector_store)
+        except Exception as e:
+            st.error(f"❌ Error initializing chatbot: {e}")
+            st.stop()
 
-                    query = st.text_input("💬 Ask something from your PDF:")
+    if not chain:
+        st.error("❌ Could not load chatbot chain.")
+        st.stop()
 
-                    if query:
-                        with st.spinner("✍️ Generating answer..."):
-                            result = chain({
-                                "question": query,
-                                "chat_history": chat_history
-                            })
+    st.success("✅ Chatbot is ready! Ask your questions below.")
+    chat_history = []
 
-                            answer = result['answer']
-                            chat_history.append((query, answer))
+    query = st.text_input("💬 Ask something from your PDF:", key="user_query")
 
-                            st.markdown(f"**🧠 Answer:** {answer}")
-                else:
-                    st.error("❌ Failed to initialize chatbot.")
-            else:
-                st.error("❌ Failed to create vector store.")
-        else:
-            st.error("❌ Failed to extract content from PDF.")
+    if query:
+        with st.spinner("✍️ Generating answer..."):
+            try:
+                result = chain({
+                    "question": query,
+                    "chat_history": chat_history
+                })
+                answer = result.get("answer", "No answer found.")
+                chat_history.append((query, answer))
+                st.markdown(f"**🧠 Answer:** {answer}")
+            except Exception as e:
+                st.error(f"❌ Error during response generation: {e}")
+with st.expander("🛠 Debug Info"):
+    st.write(f"Pages: {len(pages)}")
+    st.write(f"Chat history: {chat_history}")
