@@ -40,9 +40,11 @@ def load_pdf_from_path(pdf_path):
         return []
 
 
+from langchain_community.embeddings import HuggingFaceEmbeddings
+
 def create_vector_store(pages):
     """
-    Create FAISS vector store from PDF pages using OpenRouter-compatible embeddings.
+    Create FAISS vector store using local HuggingFace embeddings.
     """
     try:
         if not pages:
@@ -59,28 +61,13 @@ def create_vector_store(pages):
 
         st.write("✅ Step 2: Docs after split:", len(docs))
 
-        # OpenRouter API key setup
-        openrouter_key = st.secrets.get("OPENROUTER_API_KEY") or os.getenv("OPENROUTER_API_KEY")
-        if not openrouter_key:
-            st.error("❌ OPENROUTER_API_KEY not found. Set it in Streamlit Secrets or environment variable.")
-            return None
+        # Use HuggingFace embeddings instead of OpenRouter
+        embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
 
-        os.environ["OPENAI_API_KEY"] = openrouter_key  # REQUIRED by langchain_openai
-        os.environ["OPENAI_API_BASE"] = "https://openrouter.ai/api/v1"
-
-        st.write("✅ Step 3: OpenRouter API Key and Base URL set.")
-
-        # ✅ Updated embedding model compatible with OpenRouter
-        embeddings = OpenAIEmbeddings(
-            model="thenlper/gte-large",  # or "nomic-ai/nomic-embed-text"
-            openai_api_base="https://openrouter.ai/api/v1",
-            openai_api_key=openrouter_key
-        )
-
-        st.write("✅ Step 4: Embeddings initialized with OpenRouter model.")
+        st.write("✅ Step 3: Local HuggingFace Embeddings initialized.")
 
         vector_store = FAISS.from_documents(docs, embeddings)
-        st.write("✅ Step 5: Vector store created.")
+        st.write("✅ Step 4: Vector store created using FAISS.")
 
         return vector_store
 
