@@ -70,8 +70,14 @@ def create_vector_store(pages):
 
         st.write("✅ Step 3: OpenRouter API Key and Base URL set.")
 
-        embeddings = OpenAIEmbeddings(model="text-embedding-ada-002")
-        st.write("✅ Step 4: Embeddings initialized.")
+        # ✅ Updated embedding model compatible with OpenRouter
+        embeddings = OpenAIEmbeddings(
+            model="thenlper/gte-large",  # or "nomic-ai/nomic-embed-text"
+            openai_api_base="https://openrouter.ai/api/v1",
+            openai_api_key=openrouter_key
+        )
+
+        st.write("✅ Step 4: Embeddings initialized with OpenRouter model.")
 
         vector_store = FAISS.from_documents(docs, embeddings)
         st.write("✅ Step 5: Vector store created.")
@@ -94,7 +100,7 @@ def get_conversational_chain(vector_store):
 
         llm = ChatOpenAI(
             temperature=0.3,
-            model="mistralai/mixtral-8x7b",
+            model="mistralai/mixtral-8x7b",  # You can also try "mistralai/mistral-7b-instruct"
             openai_api_base="https://openrouter.ai/api/v1",
             openai_api_key=os.getenv("OPENROUTER_API_KEY") or st.secrets.get("OPENROUTER_API_KEY"),
         )
