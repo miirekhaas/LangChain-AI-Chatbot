@@ -1,4 +1,5 @@
 streamlit
+langchain
 langchain==0.1.14
 langchain-openai
 langchain-community
