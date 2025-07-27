@@ -1,6 +1,5 @@
 streamlit
 langchain
-langchain==0.1.14
 langchain-openai
 langchain-community
 openai
@@ -8,4 +7,6 @@ faiss-cpu
 PyPDF2
 tiktoken
 python-dotenv
-pip install -U langchain-community
+langchain
+
+
