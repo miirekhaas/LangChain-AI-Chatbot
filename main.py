@@ -1,29 +1,27 @@
 import streamlit as st
-from utils.helpers import create_vector_store, get_conversational_chain, load_pdf_text
-from langchain.memory import ConversationBufferMemory
-from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain.chat_models import ChatOpenAI
+from utils.helpers import load_pdf_text, create_vector_store, get_conversational_chain
 
-def get_llm(use_gemini=True):
-    if use_gemini:
-        return ChatGoogleGenerativeAI(model="gemini-pro")
-    else:
-        return ChatOpenAI()
+st.set_page_config(page_title="Gemini PDF Chatbot", layout="wide")
 
-st.set_page_config(page_title="LangChain Chatbot", layout="wide")
+st.title("📄 Gemini Chatbot with PDF")
 
-st.title("🧠 AI PDF Chatbot")
-uploaded_file = st.file_uploader("📄 Upload your PDF", type=["pdf"])
+# File upload
+pdf = st.file_uploader("Upload a PDF", type="pdf")
 
-if uploaded_file:
+if pdf:
     with st.spinner("Processing PDF..."):
-        raw_text = load_pdf_text(uploaded_file)
-        vector_store = create_vector_store(raw_text)
-        st.session_state.chain = get_conversational_chain(vector_store)
-        st.success("✅ Document loaded and indexed!")
+        pages = load_pdf_text(pdf)
+        vector_store = create_vector_store(pages)
+        chain = get_conversational_chain(vector_store)
+        st.success("PDF processed successfully!")
 
-if "chain" in st.session_state:
-    question = st.text_input("Ask a question about the document:")
-    if question:
-        response = st.session_state.chain.run(question)
-        st.write("🤖", response)
+    chat_history = []
+
+    # User input
+    query = st.text_input("Ask your PDF:")
+    if query:
+        with st.spinner("Generating answer..."):
+            result = chain({"question": query, "chat_history": chat_history})
+            response = result['answer']
+            chat_history.append((query, response))
+            st.markdown(f"**Answer:** {response}")
