@@ -7,6 +7,25 @@ from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGener
 from langchain.chains import ConversationalRetrievalChain
 
 
+import tempfile
+from langchain_community.document_loaders import PyPDFLoader
+
+def load_pdf_text(uploaded_file):
+    try:
+        # Save uploaded PDF to a temp file
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
+            tmp.write(uploaded_file.read())
+            temp_path = tmp.name
+
+        # Load PDF pages using LangChain
+        loader = PyPDFLoader(temp_path)
+        pages = loader.load()
+        return pages
+
+    except Exception as e:
+        return f"Error loading PDF: {e}"
+
+
 def load_pdf_text(pdf_path):
     """
     Loads a PDF file and extracts its content using PyPDFLoader.
