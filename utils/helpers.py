@@ -71,7 +71,7 @@ def create_vector_store(pages):
     except Exception as e:
         st.error(f"❌ Failed to create vector store: {e}")
         return None
-        def create_vector_store(pages):
+    
     try:
         if not pages:
             st.error("❌ No pages found to process.")
