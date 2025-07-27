@@ -71,6 +71,39 @@ def create_vector_store(pages):
     except Exception as e:
         st.error(f"❌ Failed to create vector store: {e}")
         return None
+        def create_vector_store(pages):
+    try:
+        if not pages:
+            st.error("❌ No pages found to process.")
+            return None
+
+        st.write("✅ Step 1: Pages received:", len(pages))
+
+        text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+        docs = text_splitter.split_documents(pages)
+
+        st.write("✅ Step 2: Docs after split:", len(docs))
+
+        api_key = st.secrets.get("GOOGLE_API_KEY") or os.getenv("GOOGLE_API_KEY")
+        if not api_key:
+            st.error("❌ GOOGLE_API_KEY not found. Set it in Streamlit Secrets or as an environment variable.")
+            return None
+        os.environ["GOOGLE_API_KEY"] = api_key
+
+        st.write("✅ Step 3: API Key is set.")
+
+        embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+        st.write("✅ Step 4: Embeddings initialized.")
+
+        vector_store = FAISS.from_documents(docs, embeddings)
+        st.write("✅ Step 5: Vector store created.")
+
+        return vector_store
+
+    except Exception as e:
+        st.error(f"❌ Failed to create vector store: {e}")
+        return None
+
 
 
 def get_conversational_chain(vector_store):
