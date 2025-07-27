@@ -83,7 +83,7 @@ def get_conversational_chain(vector_store):
             st.error("❌ Vector store is missing. Cannot create chat chain.")
             return None
 
-        llm = ChatGoogleGenerativeAI(model="gemini-pro", temperature=0.3)
+        llm = ChatGoogleGenerativeAI(model="models/chat-bison-001", temperature=0.3)
         chain = ConversationalRetrievalChain.from_llm(
             llm=llm,
             retriever=vector_store.as_retriever(),
