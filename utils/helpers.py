@@ -27,6 +27,10 @@ def load_pdf_from_upload(uploaded_file):
         return []
 
 
+
+def load_pdf_from_path(pdf_path):
+
+    # Load Gemini API key
 api_key = st.secrets.get("GOOGLE_API_KEY", os.getenv("GOOGLE_API_KEY"))
 if not api_key:
     st.error("❌ GOOGLE_API_KEY not found. Please set it in Streamlit Secrets or as an environment variable.")
@@ -34,8 +38,6 @@ if not api_key:
 
 os.environ["GOOGLE_API_KEY"] = api_key
 
-
-def load_pdf_from_path(pdf_path):
     """
     Loads a local PDF file and returns a list of LangChain Document objects.
     """
