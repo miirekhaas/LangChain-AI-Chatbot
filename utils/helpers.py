@@ -5,7 +5,7 @@ import streamlit as st
 from langchain_community.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
-from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
+from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain.chains import ConversationalRetrievalChain
 
 
@@ -42,36 +42,8 @@ def load_pdf_from_path(pdf_path):
 
 def create_vector_store(pages):
     """
-    Create FAISS vector store from PDF pages using Gemini embeddings.
+    Create FAISS vector store from PDF pages using OpenRouter-compatible embeddings.
     """
-    try:
-        if not pages:
-            st.error("❌ No pages found to process.")
-            return None
-
-        # Step 1: Split text
-        text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
-        docs = text_splitter.split_documents(pages)
-        if not docs:
-            st.error("❌ Failed to split documents into chunks.")
-            return None
-
-        # Step 2: Get API Key
-        api_key = st.secrets.get("GOOGLE_API_KEY") or os.getenv("GOOGLE_API_KEY")
-        if not api_key:
-            st.error("❌ GOOGLE_API_KEY not found. Set it in Streamlit Secrets or as an environment variable.")
-            return None
-        os.environ["GOOGLE_API_KEY"] = api_key
-
-        # Step 3: Create embeddings + vector store
-        embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
-        vector_store = FAISS.from_documents(docs, embeddings)
-        return vector_store
-
-    except Exception as e:
-        st.error(f"❌ Failed to create vector store: {e}")
-        return None
-    
     try:
         if not pages:
             st.error("❌ No pages found to process.")
@@ -81,18 +53,24 @@ def create_vector_store(pages):
 
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
         docs = text_splitter.split_documents(pages)
+        if not docs:
+            st.error("❌ Failed to split documents into chunks.")
+            return None
 
         st.write("✅ Step 2: Docs after split:", len(docs))
 
-        api_key = st.secrets.get("GOOGLE_API_KEY") or os.getenv("GOOGLE_API_KEY")
-        if not api_key:
-            st.error("❌ GOOGLE_API_KEY not found. Set it in Streamlit Secrets or as an environment variable.")
+        # OpenRouter API key setup
+        openrouter_key = st.secrets.get("OPENROUTER_API_KEY") or os.getenv("OPENROUTER_API_KEY")
+        if not openrouter_key:
+            st.error("❌ OPENROUTER_API_KEY not found. Set it in Streamlit Secrets or environment variable.")
             return None
-        os.environ["GOOGLE_API_KEY"] = api_key
 
-        st.write("✅ Step 3: API Key is set.")
+        os.environ["OPENAI_API_KEY"] = openrouter_key  # REQUIRED by langchain_openai
+        os.environ["OPENAI_API_BASE"] = "https://openrouter.ai/api/v1"
 
-        embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+        st.write("✅ Step 3: OpenRouter API Key and Base URL set.")
+
+        embeddings = OpenAIEmbeddings(model="text-embedding-ada-002")
         st.write("✅ Step 4: Embeddings initialized.")
 
         vector_store = FAISS.from_documents(docs, embeddings)
@@ -105,22 +83,28 @@ def create_vector_store(pages):
         return None
 
 
-
 def get_conversational_chain(vector_store):
     """
-    Create QA chain using Gemini chat model + vector store retriever.
+    Create a QA chatbot using OpenRouter-compatible LLM and a retriever.
     """
     try:
         if not vector_store:
             st.error("❌ Vector store is missing. Cannot create chatbot.")
             return None
 
-        llm = ChatGoogleGenerativeAI(model="models/chat-bison-001", temperature=0.3)
+        llm = ChatOpenAI(
+            temperature=0.3,
+            model="mistralai/mixtral-8x7b",
+            openai_api_base="https://openrouter.ai/api/v1",
+            openai_api_key=os.getenv("OPENROUTER_API_KEY") or st.secrets.get("OPENROUTER_API_KEY"),
+        )
+
         chain = ConversationalRetrievalChain.from_llm(
             llm=llm,
             retriever=vector_store.as_retriever(),
             return_source_documents=True
         )
+
         return chain
 
     except Exception as e:
