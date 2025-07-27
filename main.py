@@ -1,6 +1,14 @@
 import streamlit as st
 from utils.helpers import create_vector_store, get_conversational_chain, load_pdf_text
 from langchain.memory import ConversationBufferMemory
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain.chat_models import ChatOpenAI
+
+def get_llm(use_gemini=True):
+    if use_gemini:
+        return ChatGoogleGenerativeAI(model="gemini-pro")
+    else:
+        return ChatOpenAI()
 
 st.set_page_config(page_title="LangChain Chatbot", layout="wide")
 
