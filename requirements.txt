@@ -7,3 +7,4 @@ faiss-cpu
 PyPDF2
 tiktoken
 python-dotenv
+pip install -U langchain-community
