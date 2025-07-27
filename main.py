@@ -25,3 +25,13 @@ if pdf:
             response = result['answer']
             chat_history.append((query, response))
             st.markdown(f"**Answer:** {response}")
+uploaded_file = st.file_uploader("Upload a PDF", type="pdf")
+
+if uploaded_file:
+    st.success(f"✅ PDF uploaded: {uploaded_file.name}")
+    pages = load_pdf_text(uploaded_file)
+
+    if pages:
+        st.info(f"Loaded {len(pages)} page(s)")
+    else:
+        st.error("❌ Failed to load PDF.")
