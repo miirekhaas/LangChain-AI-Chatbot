@@ -6,25 +6,24 @@ from langchain_community.vectorstores import FAISS
 from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
 from langchain.chains import ConversationalRetrievalChain
 
-
 import tempfile
 from langchain_community.document_loaders import PyPDFLoader
 
 def load_pdf_text(uploaded_file):
     try:
-        # Save uploaded PDF to a temp file
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
-            tmp.write(uploaded_file.read())
-            temp_path = tmp.name
+        # 1. Write uploaded file to a temporary path
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_file:
+            tmp_file.write(uploaded_file.getvalue())
+            tmp_file_path = tmp_file.name
 
-        # Load PDF pages using LangChain
-        loader = PyPDFLoader(temp_path)
+        # 2. Use PyPDFLoader on that path
+        loader = PyPDFLoader(tmp_file_path)
         pages = loader.load()
         return pages
 
     except Exception as e:
-        return f"Error loading PDF: {e}"
-
+        print(f"❌ Failed to load PDF: {e}")
+        return []
 
 def load_pdf_text(pdf_path):
     """
