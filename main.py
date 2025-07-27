@@ -67,6 +67,3 @@ if uploaded_file:
                 st.markdown(f"**🧠 Answer:** {answer}")
             except Exception as e:
                 st.error(f"❌ Error during response generation: {e}")
-with st.expander("🛠 Debug Info"):
-    st.write(f"Pages: {len(pages)}")
-    st.write(f"Chat history: {chat_history}")
