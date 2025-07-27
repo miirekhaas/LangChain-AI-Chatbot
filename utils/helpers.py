@@ -11,7 +11,7 @@ from langchain.chains import ConversationalRetrievalChain
 
 def load_pdf_from_upload(uploaded_file):
     """
-    Handles a Streamlit uploaded_file object, saves to a temp file, and loads pages using PyPDFLoader.
+    Save uploaded PDF to a temp file and load its pages.
     """
     try:
         with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_file:
@@ -27,11 +27,9 @@ def load_pdf_from_upload(uploaded_file):
         return []
 
 
-
 def load_pdf_from_path(pdf_path):
-
     """
-    Loads a local PDF file and returns a list of LangChain Document objects.
+    Load local PDF by path.
     """
     try:
         loader = PyPDFLoader(pdf_path)
@@ -44,38 +42,28 @@ def load_pdf_from_path(pdf_path):
 
 def create_vector_store(pages):
     """
-    Creates a FAISS vector store from a list of Document objects using Gemini embeddings.
+    Create FAISS vector store from PDF pages using Gemini embeddings.
     """
     try:
         if not pages:
             st.error("❌ No pages found to process.")
             return None
 
-        # 1. Chunk the documents
+        # Step 1: Split text
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
         docs = text_splitter.split_documents(pages)
-
         if not docs:
             st.error("❌ Failed to split documents into chunks.")
             return None
-            
 
-        # 2. Load Gemini API key
+        # Step 2: Get API Key
         api_key = st.secrets.get("GOOGLE_API_KEY") or os.getenv("GOOGLE_API_KEY")
         if not api_key:
             st.error("❌ GOOGLE_API_KEY not found. Set it in Streamlit Secrets or as an environment variable.")
             return None
         os.environ["GOOGLE_API_KEY"] = api_key
 
-        # Load Gemini API key
-api_key = st.secrets.get("GOOGLE_API_KEY", os.getenv("GOOGLE_API_KEY"))
-if not api_key:
-    st.error("❌ GOOGLE_API_KEY not found. Please set it in Streamlit Secrets or as an environment variable.")
-    return None
-
-os.environ["GOOGLE_API_KEY"] = api_key
-
-        # 3. Create embeddings and vector store
+        # Step 3: Create embeddings + vector store
         embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
         vector_store = FAISS.from_documents(docs, embeddings)
         return vector_store
@@ -87,11 +75,11 @@ os.environ["GOOGLE_API_KEY"] = api_key
 
 def get_conversational_chain(vector_store):
     """
-    Creates a conversational QA chain using Gemini and the provided vector store.
+    Create QA chain using Gemini chat model + vector store retriever.
     """
     try:
-        if vector_store is None:
-            st.error("❌ Vector store is missing. Cannot create chat chain.")
+        if not vector_store:
+            st.error("❌ Vector store is missing. Cannot create chatbot.")
             return None
 
         llm = ChatGoogleGenerativeAI(model="models/chat-bison-001", temperature=0.3)
