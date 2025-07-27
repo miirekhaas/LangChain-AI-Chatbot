@@ -7,10 +7,6 @@ faiss-cpu
 PyPDF2
 tiktoken
 python-dotenv
-langchain
 langchain-google-genai
 google-generativeai
-streamlit
-langchain
-langchain-community
-google-generativeai
+pypdf
