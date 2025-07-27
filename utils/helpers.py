@@ -1,16 +1,15 @@
 import os
 from PyPDF2 import PdfReader
 from langchain.text_splitter import CharacterTextSplitter
-from langchain_community.embeddings import OpenAIEmbeddings
-from langchain_community.vectorstores import FAISS
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
-from langchain.embeddings import OpenAIEmbeddings
+import os
+import streamlit as st
+from langchain_community.embeddings import GoogleGenerativeAIEmbeddings
 
-def get_embedding(use_gemini=True):
-    if use_gemini:
-        return GoogleGenerativeAIEmbeddings(model="models/embedding-001")
-    else:
-        return OpenAIEmbeddings()
+# Load API key from Streamlit secrets
+os.environ["GOOGLE_API_KEY"] = st.secrets["GOOGLE_API_KEY"]
+
+def get_gemini_embedding():
+    return GoogleGenerativeAIEmbeddings(model="models/embedding-001")
 
 from langchain.memory import ConversationBufferMemory
 
