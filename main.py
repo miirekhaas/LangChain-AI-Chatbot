@@ -1,3 +1,4 @@
+import os
 import streamlit as st
 from utils.helpers import (
     load_pdf_from_upload,
@@ -6,8 +7,17 @@ from utils.helpers import (
 )
 
 # App config
-st.set_page_config(page_title="📄 Gemini PDF Chatbot", layout="wide")
-st.title("📄 Gemini Chatbot with PDF")
+st.set_page_config(page_title="📄 OpenRouter PDF Chatbot", layout="wide")
+st.title("📄 OpenRouter Chatbot with PDF")
+
+# Set OpenRouter API Key
+openrouter_key = st.secrets.get("OPENROUTER_API_KEY") or os.getenv("OPENROUTER_API_KEY")
+if not openrouter_key:
+    st.error("❌ OPENROUTER_API_KEY not found. Please set it in Streamlit secrets or as an environment variable.")
+    st.stop()
+else:
+    os.environ["OPENAI_API_KEY"] = openrouter_key
+    os.environ["OPENAI_API_BASE"] = "https://openrouter.ai/api/v1"
 
 # Upload PDF
 uploaded_file = st.file_uploader("Upload a PDF", type="pdf", key="pdf_upload")
