@@ -1,13 +1,28 @@
 import os
-import openai
-from dotenv import load_dotenv
+from PyPDF2 import PdfReader
+from langchain.text_splitter import CharacterTextSplitter
+from langchain.embeddings import OpenAIEmbeddings
+from langchain.vectorstores import FAISS
+from langchain.chains import ConversationalRetrievalChain
+from langchain.chat_models import ChatOpenAI
+from langchain.memory import ConversationBufferMemory
 
-load_dotenv()
-openai.api_key = os.getenv("OPENAI_API_KEY")
+def load_pdf_text(uploaded_file):
+    reader = PdfReader(uploaded_file)
+    text = ""
+    for page in reader.pages:
+        text += page.extract_text() + "\n"
+    return text
 
-def ask_openai(prompt):
-    response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo", 
-        messages=[{"role": "user", "content": prompt}]
+def create_vector_store(text):
+    splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+    chunks = splitter.split_text(text)
+    embeddings = OpenAIEmbeddings()
+    return FAISS.from_texts(chunks, embeddings)
+
+def get_conversational_chain(vector_store):
+    llm = ChatOpenAI()
+    memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
+    return ConversationalRetrievalChain.from_llm(
+        llm=llm, retriever=vector_store.as_retriever(), memory=memory
     )
-    return response['choices'][0]['message']['content']
