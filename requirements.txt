@@ -1,9 +1,7 @@
 streamlit
-langchain
+langchain==0.1.14
 openai
 faiss-cpu
-python-dotenv
-tiktoken
 PyPDF2
-beautifulsoup4
-requests
+tiktoken
+python-dotenv
