@@ -26,6 +26,7 @@ def load_pdf_from_upload(uploaded_file):
         st.error(f"❌ Failed to load PDF from upload: {e}")
         return []
 
+api_key = st.secrets.get("GOOGLE_API_KEY", os.getenv("GOOGLE_API_KEY"))
 
 def load_pdf_from_path(pdf_path):
     """
