@@ -8,5 +8,5 @@ PyPDF2
 tiktoken
 python-dotenv
 langchain
-
+langchain-google-genai
 
