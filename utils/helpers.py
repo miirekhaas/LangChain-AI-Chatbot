@@ -1,5 +1,13 @@
-# utils/helpers.py
+import os
+import openai
+from dotenv import load_dotenv
 
-def format_response(text):
-    """Format the response text before displaying."""
-    return text.strip().replace("\n", "\n\n")
+load_dotenv()
+openai.api_key = os.getenv("OPENAI_API_KEY")
+
+def ask_openai(prompt):
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo", 
+        messages=[{"role": "user", "content": prompt}]
+    )
+    return response['choices'][0]['message']['content']
