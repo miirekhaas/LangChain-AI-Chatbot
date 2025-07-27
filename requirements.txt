@@ -10,3 +10,5 @@ python-dotenv
 langchain-google-genai
 google-generativeai
 pypdf
+sentence-transformers
+
