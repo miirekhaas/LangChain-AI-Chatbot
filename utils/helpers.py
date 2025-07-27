@@ -5,14 +5,12 @@ import streamlit as st
 from langchain_community.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
-from langchain_openai import OpenAIEmbeddings, ChatOpenAI
+from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_openai import ChatOpenAI
 from langchain.chains import ConversationalRetrievalChain
 
 
 def load_pdf_from_upload(uploaded_file):
-    """
-    Save uploaded PDF to a temp file and load its pages.
-    """
     try:
         with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_file:
             tmp_file.write(uploaded_file.getvalue())
@@ -28,9 +26,6 @@ def load_pdf_from_upload(uploaded_file):
 
 
 def load_pdf_from_path(pdf_path):
-    """
-    Load local PDF by path.
-    """
     try:
         loader = PyPDFLoader(pdf_path)
         pages = loader.load()
@@ -40,12 +35,7 @@ def load_pdf_from_path(pdf_path):
         return []
 
 
-from langchain_community.embeddings import HuggingFaceEmbeddings
-
 def create_vector_store(pages):
-    """
-    Create FAISS vector store using local HuggingFace embeddings.
-    """
     try:
         if not pages:
             st.error("❌ No pages found to process.")
@@ -61,9 +51,8 @@ def create_vector_store(pages):
 
         st.write("✅ Step 2: Docs after split:", len(docs))
 
-        # Use HuggingFace embeddings instead of OpenRouter
+        # ✅ No API key needed here
         embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
-
         st.write("✅ Step 3: Local HuggingFace Embeddings initialized.")
 
         vector_store = FAISS.from_documents(docs, embeddings)
@@ -77,9 +66,6 @@ def create_vector_store(pages):
 
 
 def get_conversational_chain(vector_store):
-    """
-    Create a QA chatbot using OpenRouter-compatible LLM and a retriever.
-    """
     try:
         if not vector_store:
             st.error("❌ Vector store is missing. Cannot create chatbot.")
@@ -87,7 +73,7 @@ def get_conversational_chain(vector_store):
 
         llm = ChatOpenAI(
             temperature=0.3,
-            model="mistralai/mixtral-8x7b",  # You can also try "mistralai/mistral-7b-instruct"
+            model="mistralai/mixtral-8x7b",
             openai_api_base="https://openrouter.ai/api/v1",
             openai_api_key=os.getenv("OPENROUTER_API_KEY") or st.secrets.get("OPENROUTER_API_KEY"),
         )
