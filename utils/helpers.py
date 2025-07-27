@@ -30,14 +30,6 @@ def load_pdf_from_upload(uploaded_file):
 
 def load_pdf_from_path(pdf_path):
 
-    # Load Gemini API key
-api_key = st.secrets.get("GOOGLE_API_KEY", os.getenv("GOOGLE_API_KEY"))
-if not api_key:
-    st.error("❌ GOOGLE_API_KEY not found. Please set it in Streamlit Secrets or as an environment variable.")
-    return None
-
-os.environ["GOOGLE_API_KEY"] = api_key
-
     """
     Loads a local PDF file and returns a list of LangChain Document objects.
     """
@@ -66,6 +58,7 @@ def create_vector_store(pages):
         if not docs:
             st.error("❌ Failed to split documents into chunks.")
             return None
+            
 
         # 2. Load Gemini API key
         api_key = st.secrets.get("GOOGLE_API_KEY") or os.getenv("GOOGLE_API_KEY")
@@ -73,6 +66,14 @@ def create_vector_store(pages):
             st.error("❌ GOOGLE_API_KEY not found. Set it in Streamlit Secrets or as an environment variable.")
             return None
         os.environ["GOOGLE_API_KEY"] = api_key
+
+        # Load Gemini API key
+api_key = st.secrets.get("GOOGLE_API_KEY", os.getenv("GOOGLE_API_KEY"))
+if not api_key:
+    st.error("❌ GOOGLE_API_KEY not found. Please set it in Streamlit Secrets or as an environment variable.")
+    return None
+
+os.environ["GOOGLE_API_KEY"] = api_key
 
         # 3. Create embeddings and vector store
         embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
