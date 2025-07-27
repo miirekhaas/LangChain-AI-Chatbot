@@ -26,7 +26,14 @@ def load_pdf_from_upload(uploaded_file):
         st.error(f"❌ Failed to load PDF from upload: {e}")
         return []
 
+
 api_key = st.secrets.get("GOOGLE_API_KEY", os.getenv("GOOGLE_API_KEY"))
+if not api_key:
+    st.error("❌ GOOGLE_API_KEY not found. Please set it in Streamlit Secrets or as an environment variable.")
+    return None
+
+os.environ["GOOGLE_API_KEY"] = api_key
+
 
 def load_pdf_from_path(pdf_path):
     """
