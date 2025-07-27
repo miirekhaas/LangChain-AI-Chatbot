@@ -73,10 +73,11 @@ def get_conversational_chain(vector_store):
 
         llm = ChatOpenAI(
     temperature=0.3,
-    model="openchat/openchat-3.5-1210",  # ✅ Valid model for OpenRouter
+    model="openrouter/openai/gpt-3.5-turbo",  # ✅ Use a valid model ID
     openai_api_base="https://openrouter.ai/api/v1",
     openai_api_key=os.getenv("OPENROUTER_API_KEY") or st.secrets.get("OPENROUTER_API_KEY"),
 )
+
 
 
         chain = ConversationalRetrievalChain.from_llm(
